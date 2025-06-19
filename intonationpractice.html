@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Intonation Mastery Visualizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #e0e7ff;
+      --rising: #3a86ff;
+      --falling: #ff006e;
+      --text: #2b2d42;
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --success: #4cc9f0;
+      --motivation: #7209b7;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 20px;
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeIn 0.8s ease;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      border-top: 6px solid var(--primary);
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--rising), var(--falling));
+    }
+
+    h1 {
+      color: var(--motivation);
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      position: relative;
+      display: inline-block;
+    }
+
+    h1::after {
+      content: "✨";
+      position: absolute;
+      right: -30px;
+      top: -10px;
+      font-size: 1.5rem;
+      animation: sparkle 2s infinite;
+    }
+
+    .subtitle {
+      color: #6c757d;
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto 15px;
+      line-height: 1.7;
+    }
+
+    .motivation-text {
+      font-style: italic;
+      color: var(--motivation);
+      font-weight: 500;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: rgba(114, 9, 183, 0.08);
+      animation: pulse 6s infinite;
+    }
+
+    .intonation-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .sentence-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      border-left: 6px solid var(--primary);
+      animation: slideUp 0.5s ease;
+      animation-fill-mode: both;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sentence-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+      pointer-events: none;
+    }
+
+    .sentence-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+    }
+
+    .sentence-card.active {
+      background-color: rgba(67, 97, 238, 0.03);
+    }
+
+    .sentence {
+      font-size: 1.4rem;
+      margin: 0 0 15px 0;
+      cursor: pointer;
+      position: relative;
+      padding: 10px 0;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.3s ease;
+      line-height: 1.5;
+    }
+
+    .sentence:hover {
+      color: var(--primary);
+    }
+
+    .intonation-wave {
+      width: 100%;
+      height: 100px;
+      margin-top: 15px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      background: rgba(255,255,255,0.5);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    .sentence-card.active .intonation-wave {
+      opacity: 1;
+    }
+
+    .intonation-wave svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .wave-rising path {
+      stroke: var(--rising);
+      stroke-width: 4;
+      fill: none;
+      stroke-linecap: round;
+    }
+
+    .wave-falling path {
+      stroke: var(--falling);
+      stroke-width: 4;
+      fill: none;
+      stroke-linecap: round;
+    }
+
+    .tone-indicator {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-left: 10px;
+      vertical-align: middle;
+      transition: all 0.3s ease;
+    }
+
+    .rising-indicator {
+      background-color: rgba(58, 134, 255, 0.15);
+      color: var(--rising);
+      border: 1px solid rgba(58, 134, 255, 0.3);
+    }
+
+    .falling-indicator {
+      background-color: rgba(255, 0, 110, 0.15);
+      color: var(--falling);
+      border: 1px solid rgba(255, 0, 110, 0.3);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 50px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+      position: relative;
+      overflow: hidden;
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: 0.5px;
+    }
+
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+    }
+
+    .btn:hover::after {
+      opacity: 1;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #6c757d;
+      font-size: 1.2rem;
+    }
+
+    .loading::after {
+      content: "...";
+      animation: dots 1.5s infinite steps(3);
+      display: inline-block;
+      width: 0;
+    }
+
+    .error {
+      text-align: center;
+      padding: 30px;
+      color: #d90429;
+      background: rgba(217, 4, 41, 0.08);
+      border-radius: 10px;
+      border-left: 4px solid #d90429;
+      font-weight: 500;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #e9ecef;
+      border-radius: 50px;
+      margin: 30px 0;
+      height: 10px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 50px;
+      background: linear-gradient(90deg, var(--rising), var(--primary));
+      width: 0;
+      transition: width 0.5s ease;
+    }
+
+    .practice-count {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    @keyframes draw {
+      from {
+        stroke-dashoffset: 300;
+      }
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes sparkle {
+      0% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.5; transform: scale(1); }
+    }
+
+    @keyframes dots {
+      0%, 20% { content: "."; }
+      40% { content: ".."; }
+      60%, 100% { content: "..."; }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      h1::after {
+        right: -25px;
+        top: -5px;
+        font-size: 1.2rem;
+      }
+      
+      .sentence {
+        font-size: 1.2rem;
+      }
+      
+      .intonation-wave {
+        height: 80px;
+      }
+      
+      .controls {
+        gap: 10px;
+      }
+      
+      .btn {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Intonation Mastery Visualizer</h1>
+        <h2>In the Hotel</h2>
+      <p class="subtitle"></p>
+      <p class="motivation-text">Every sentence you practice brings you closer to fluent, natural-sounding English!</p>
+    </header>
+
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="practice-count">Practice Progress: <span id="practiceCount">0</span> sentences explored</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="refreshBtn">🔄 Refresh Sentences</button>
+      <button class="btn" id="showAllBtn">👁️ Show All Patterns</button>
+      <button class="btn" id="hideAllBtn">🙈 Hide All Patterns</button>
+    </div>
+
+    <div id="content">
+      <div class="loading">Loading practice sentences</div>
+    </div>
+
+    <script>
+      // Configuration
+      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyaS1-8cYwH7Ye-2SBFP8-XJeHgiESkTXU26qz7Dyq8o8kws7WnqVyAYNJdmNM5l377/exec'; // Replace with your Apps Script deployment URL
+      const ANIMATION_DURATION = 800;
+      let practiceCount = 0;
+      
+      // DOM Elements
+      const contentEl = document.getElementById('content');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const showAllBtn = document.getElementById('showAllBtn');
+      const hideAllBtn = document.getElementById('hideAllBtn');
+      const progressBar = document.getElementById('progressBar');
+      const progressContainer = document.querySelector('.progress-container');
+      const practiceCountEl = document.getElementById('practiceCount');
+      
+      // Fetch data from Google Sheet
+      async function fetchIntonationData() {
+        try {
+          contentEl.innerHTML = '<div class="loading">Loading practice sentences</div>';
+          
+          const response = await fetch(`${SCRIPT_URL}?action=getIntonationData`);
+          if (!response.ok) throw new Error('Network response was not ok');
+          
+          const data = await response.json();
+          
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          
+          renderSentences(data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          contentEl.innerHTML = `
+            <div class="error">
+              <p>Oops! We couldn't load the practice sentences.</p>
+              <p><small>${error.message}</small></p>
+            </div>
+          `;
+        }
+      }
+      
+      // Render sentences with intonation patterns
+      function renderSentences(sentences) {
+        if (!sentences || sentences.length === 0) {
+          contentEl.innerHTML = '<div class="error">No practice sentences available yet. Check back soon!</div>';
+          return;
+        }
+        
+        let html = '<div class="intonation-container">';
+        
+        sentences.forEach((item, index) => {
+          const isRising = item.intonation.toLowerCase() === 'rising';
+          const toneClass = isRising ? 'wave-rising' : 'wave-falling';
+          const toneIndicator = isRising ? 
+            '<span class="tone-indicator rising-indicator">rising ↗</span>' : 
+            '<span class="tone-indicator falling-indicator">falling ↘</span>';
+          
+          // SVG path data - more dynamic curves
+          const pathData = isRising ? 
+            'M0 50 Q 25 30, 50 20 Q 75 10, 100 10' : 
+            'M0 10 Q 25 30, 50 40 Q 75 50, 100 50';
+          
+          html += `
+            <div class="sentence-card" data-index="${index}">
+              <div class="sentence">
+                ${item.sentence}
+                ${toneIndicator}
+              </div>
+              <div class="intonation-wave ${toneClass}">
+                <svg viewBox="0 0 100 60" preserveAspectRatio="none">
+                  <path d="${pathData}" />
+                </svg>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+        contentEl.innerHTML = html;
+        
+        // Show progress container
+        progressContainer.style.display = 'block';
+        updateProgress();
+        
+        // Add event listeners to all sentence cards
+        document.querySelectorAll('.sentence-card').forEach(card => {
+          const sentence = card.querySelector('.sentence');
+          const wave = card.querySelector('.intonation-wave');
+          const path = wave.querySelector('path');
+          
+          // Initialize path for animation
+          path.style.strokeDasharray = path.getTotalLength();
+          path.style.strokeDashoffset = path.getTotalLength();
+          
+          // Click event
+          card.addEventListener('click', () => {
+            const wasActive = card.classList.contains('active');
+            card.classList.toggle('active');
+            
+            if (card.classList.contains('active')) {
+              animatePath(path);
+              if (!wasActive) {
+                practiceCount++;
+                updateProgress();
+              }
+            }
+          });
+          
+          // Hover events
+          card.addEventListener('mouseenter', () => {
+            if (!card.classList.contains('active')) {
+              animatePath(path);
+            }
+          });
+        });
+      }
+      
+      // Update progress display
+      function updateProgress() {
+        const totalSentences = document.querySelectorAll('.sentence-card').length;
+        const percentage = Math.min(100, Math.round((practiceCount / totalSentences) * 100));
+        
+        progressBar.style.width = `${percentage}%`;
+        practiceCountEl.textContent = practiceCount;
+        
+        // Change color based on progress
+        if (percentage < 30) {
+          progressBar.style.background = 'linear-gradient(90deg, var(--rising), #f72585)';
+        } else if (percentage < 70) {
+          progressBar.style.background = 'linear-gradient(90deg, var(--rising), var(--primary))';
+        } else {
+          progressBar.style.background = 'linear-gradient(90deg, var(--rising), #4cc9f0)';
+        }
+      }
+      
+      // Animate SVG path
+      function animatePath(path) {
+        // Reset animation
+        path.style.strokeDashoffset = path.getTotalLength();
+        path.style.transition = 'none';
+        
+        // Trigger reflow
+        void path.offsetWidth;
+        
+        // Start animation
+        path.style.transition = `stroke-dashoffset ${ANIMATION_DURATION}ms ease-out`;
+        path.style.strokeDashoffset = '0';
+      }
+      
+      // Show all patterns
+      function showAllPatterns() {
+        document.querySelectorAll('.sentence-card').forEach(card => {
+          if (!card.classList.contains('active')) {
+            practiceCount++;
+          }
+          card.classList.add('active');
+          const path = card.querySelector('path');
+          animatePath(path);
+        });
+        updateProgress();
+      }
+      
+      // Hide all patterns
+      function hideAllPatterns() {
+        document.querySelectorAll('.sentence-card').forEach(card => {
+          card.classList.remove('active');
+        });
+      }
+      
+      // Event listeners
+      refreshBtn.addEventListener('click', () => {
+        practiceCount = 0;
+        fetchIntonationData();
+      });
+      showAllBtn.addEventListener('click', showAllPatterns);
+      hideAllBtn.addEventListener('click', hideAllPatterns);
+      
+      // Initial load
+      document.addEventListener('DOMContentLoaded', fetchIntonationData);
+      
+      // Auto-refresh every 5 minutes (optional)
+      setInterval(fetchIntonationData, 5 * 60 * 1000);
+    </script>
+  </div>
+</body>
+</html>
